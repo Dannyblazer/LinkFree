@@ -1,0 +1,27 @@
+{
+
+  "name": "Nnaji Daniel",
+
+  "displayStatsPublic": true,
+
+  "type": "personal",
+
+  "bio": "An enthusiastic python Django developer with a touch of linux SysAdmin skills",
+
+  "avatar": "https://github.com/Dannyblazer.png",
+
+  "links": [
+
+    {
+
+      "name": "Follow me on Twitter",
+
+      "url": "https://twitter.com/Blazetrane",
+
+      "icon": "FaTwitter"
+
+    }
+
+  ]
+
+}
