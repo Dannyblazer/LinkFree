@@ -1,3 +1,4 @@
+import { serverEnv } from "@config/schemas/serverSchema";
 import * as PinoLogger from "pino";
 
 const config = {
@@ -9,8 +10,8 @@ const config = {
   },
 };
 
-const logger = PinoLogger.pino(
-  process.env.NODE_ENV === "development" ? config : {}
-);
+let logger;
+
+logger = PinoLogger.pino(serverEnv.NODE_ENV === "development" ? config : {});
 
 export default logger;

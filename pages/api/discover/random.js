@@ -1,39 +1,54 @@
-import fs from "fs";
-import path from "path";
-
-import connectMongo from "../../../config/mongo";
-import logger from "../../../config/logger";
-import Profile from "../../../models/Profile";
+import { serverEnv } from "@config/schemas/serverSchema";
+import connectMongo from "@config/mongo";
+import Profile from "@models/Profile";
+import logger from "@config/logger";
 
 export default async function handler(req, res) {
-  await connectMongo();
+  if (req.method != "GET") {
+    return res
+      .status(400)
+      .json({ error: "Invalid request: GET request required" });
+  }
 
-  let randomProfiles = [];
+  let profile = {};
   try {
-    randomProfiles = await Profile.aggregate([
-      { $sample: { size: 5 } },
-      { $match: { username: { $nin: process.env.SHADOWBAN.split(",") } } },
-    ]);
-  } catch (e) {
-    logger.error(e, "failed to load profiles");
+    profile = await getRandomProfileApi();
+
+    res.status(200).json(profile);
+  } catch (error) {
+    logger.error(error, "Error fetching user profiles");
+    res.status(500).json({ error: "Failed to fetch user profiles" });
+  }
+}
+
+export async function getRandomProfileApi() {
+  await connectMongo();
+  if (!serverEnv.RANDOM_USERS) {
+    return {};
   }
 
-  if (randomProfiles.length === 0) {
-    return res.status(404).json([]);
+  const usernames = serverEnv.RANDOM_USERS.split(",");
+
+  if (usernames.length === 0) {
+    return {};
   }
 
-  const directoryPath = path.join(process.cwd(), "data");
-  const fullRandomProfiles = randomProfiles.flatMap((profile) => {
-    const filePath = path.join(directoryPath, `${profile.username}.json`);
-    try {
-      const user = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  try {
+    const profile = await Profile.aggregate([
+      { $match: { username: { $in: usernames } } },
+      { $sample: { size: 1 } },
+      { $project: { username: 1, bio: 1, name: 1 } },
+    ]).exec();
 
-      return { ...user, username: profile.username };
-    } catch (e) {
-      logger.error(e, `failed to get load profiles: ${filePath}`);
-      return [];
+    return JSON.parse(JSON.stringify(profile ? profile[0] : {}));
+  } catch (error) {
+    if (serverEnv.NODE_ENV === "development") {
+      logger.warn(
+        "Users not loaded. Please visit /api/system/reload?secret=development",
+      );
+      return {};
     }
-  });
-
-  res.status(200).json(fullRandomProfiles);
+    logger.error(error, "Error fetching user profiles");
+    return { error: "Failed to fetch user profiles" };
+  }
 }

@@ -1,9 +1,6 @@
 {
   "name": "Tejender Upadhyay",
-  "displayStatsPublic": true,
-  "type": "personal",
   "bio": "Full Stack Developer || Pre-Final Year C.S.E. Undergrad. || Self-Taught Developer",
-  "avatar": "https://github.com/Tejender1521.png",
   "tags": [
     "Javascript",
     "C++",
@@ -39,7 +36,7 @@
   "links": [
     {
       "name": "Personal Portfolio",
-      "url": "https://www.tejender-upadhyay.tech",
+      "url": "https://tejender-upadhyay.netlify.app/",
       "icon": "SiProgress"
     },
     {
